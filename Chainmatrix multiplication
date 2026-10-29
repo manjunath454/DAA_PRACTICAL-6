@@ -1,0 +1,58 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+
+using namespace std;
+
+// Function to find the minimum number of scalar multiplications needed
+int matrixChainMultiplication(const vector<int>& p) {
+    int n = p.size(); // Number of dimensions is n, which means n - 1 matrices
+    
+    // dp[i][j] will store the minimum cost of multiplying matrices from index i to j
+    // We use a 2D vector of size n x n, initialized to 0
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+
+    // 'len' is the chain length (number of matrices being multiplied together)
+    for (int len = 2; len < n; ++len) {
+        for (int i = 1; i < n - len + 1; ++i) {
+            int j = i + len - 1;
+            dp[i][j] = INT_MAX; // Initialize to maximum value
+
+            // Try every possible split point 'k' between i and j-1
+            for (int k = i; k <= j - 1; ++k) {
+                // Cost = Cost of multiplying left subchain (i to k) 
+                //      + Cost of multiplying right subchain (k+1 to j) 
+                //      + Cost of multiplying the two resultant matrices
+                int cost = dp[i][k] + dp[k + 1][j] + p[i - 1] * p[k] * p[j];
+
+                if (cost < dp[i][j]) {
+                    dp[i][j] = cost;
+                }
+            }
+        }
+    }
+
+    // The result for the entire chain of matrices from 1 to n-1
+    return dp[1][n - 1];
+}
+
+int main() {
+    // Example: Dimensions of matrices
+    // Matrix A1 is p[0] x p[1] (e.g., 10 x 30)
+    // Matrix A2 is p[1] x p[2] (e.g., 30 x 5)
+    // Matrix A3 is p[2] x p[3] (e.g., 5 x 60)
+    vector<int> dimensions = {10, 30, 5, 60};
+
+    cout << "--- Matrix Chain Multiplication (Dynamic Programming) ---\n";
+    cout << "Matrix dimensions: ";
+    for (size_t i = 0; i < dimensions.size() - 1; ++i) {
+        cout << "A" << i+1 << "(" << dimensions[i] << "x" << dimensions[i+1] << ") ";
+    }
+    cout << "\n\n";
+
+    int min_multiplications = matrixChainMultiplication(dimensions);
+
+    cout << "Minimum number of scalar multiplications needed: " << min_multiplications << "\n";
+
+    return 0;
+}
